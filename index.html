@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYTUS - Interactive System Prototype</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use the Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* A light gray background */
+        }
+        /* Custom styles for the net animation */
+        #net {
+            transition: all 1s ease-in-out;
+        }
+        /* Blinking animation for status dots */
+        @keyframes blink {
+            50% { opacity: 0.2; }
+        }
+        .blinking-dot {
+            animation: blink 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-4 md:p-8">
+        
+        <!-- Header Section -->
+        <header class="flex justify-between items-center border-b pb-4 mb-6">
+            <h1 class="text-xl md:text-3xl font-bold text-gray-800">PHYTUS System Animation Prototype</h1>
+            <div class="text-right">
+                <p class="text-sm text-gray-500">System Time</p>
+                <p id="system-time" class="text-md md:text-lg font-semibold text-gray-700">--:--:--</p>
+            </div>
+        </header>
+
+        <!-- Animation Controls Section -->
+        <section class="bg-gray-50 p-6 rounded-xl border">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg md:text-2xl font-semibold text-gray-700">Animation Controls</h2>
+                <span id="system-status-badge" class="px-3 py-1 text-sm font-medium rounded-full bg-gray-200 text-gray-600">Idle</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                <div class="flex space-x-2">
+                    <button id="start-btn" class="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 transition">Start Simulation</button>
+                    <button id="pause-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition" disabled>Pause</button>
+                    <button id="reset-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition" disabled>Reset</button>
+                </div>
+                
+                <div class="col-span-1 md:col-span-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-teal-500 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0.0s</span>
+                        <span id="progress-time">0.0s / 10.0s</span>
+                        <span>10.0s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <label for="fault-phase" class="block text-sm font-medium text-gray-700">Select Storm Event:</label>
+                <select id="fault-phase" class="mt-1 block w-full md:w-1/3 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500">
+                    <option value="wind">High Wind (>25 km/h)</option>
+                    <option value="rain">Heavy Rain (>5 mm/h)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- System Animation View Section -->
+        <section class="mt-8">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-lg md:text-2xl font-semibold text-gray-700">System Animation View</h2>
+                 <span id="operation-status" class="px-3 py-1 font-semibold rounded-full bg-green-100 text-green-800">Normal Operation</span>
+            </div>
+
+            <div class="relative w-full h-96 bg-sky-100 rounded-xl p-8 overflow-hidden border-2 border-gray-200">
+                <!-- Sky and Ground -->
+                <div class="absolute bottom-0 left-0 w-full h-1/3 bg-green-200"></div>
+
+                <!-- Tree -->
+                <div class="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-4 h-24 bg-yellow-900 rounded-t-md"></div>
+                <div class="absolute bottom-1/3 left-1/2 -translate-x-1/2 mb-24 w-40 h-40 bg-green-600 rounded-full"></div>
+
+                <!-- Sensor Pole -->
+                <div class="absolute bottom-1/3 left-1/4 -translate-x-1/2 w-2 h-32 bg-gray-500"></div>
+                <div class="absolute bottom-1/3 left-1/4 -translate-x-1/2 mb-32 p-2 bg-gray-700 rounded-md shadow-lg">
+                    <p class="text-white text-xs font-mono">SENSORS</p>
+                </div>
+
+                <!-- Net System -->
+                <div id="net-base" class="absolute bottom-1/3 left-1/2 -translate-x-1/2 mb-[-10px] w-16 h-8 bg-gray-600 rounded-t-lg z-10 flex items-center justify-center">
+                     <p id="motor-status" class="text-white text-xs font-bold">IDLE</p>
+                </div>
+                <div id="net" class="absolute bottom-1/3 left-1/2 -translate-x-1/2 mb-16 border-gray-400 border-2 bg-gray-300 bg-opacity-50" style="width: 20px; height: 10px; border-radius: 50% 50% 0 0;"></div>
+
+                <!-- Status Boxes -->
+                <div class="absolute top-4 left-4 bg-white/70 backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 class="font-semibold text-gray-800">Wind Sensor</h3>
+                    <p id="wind-status" class="text-gray-600 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>Normal
+                    </p>
+                </div>
+                 <div class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 class="font-semibold text-gray-800">Rain Sensor</h3>
+                    <p id="rain-status" class="text-gray-600 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>Normal
+                    </p>
+                </div>
+
+                 <div class="absolute bottom-4 left-4 bg-white/70 backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 class="font-semibold text-gray-800">System Logic</h3>
+                    <p id="logic-status" class="text-gray-600 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 mr-2 blinking-dot"></span>Monitoring...
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const faultPhaseSelect = document.getElementById('fault-phase');
+        const progressBar = document.getElementById('progress-bar');
+        const progressTime = document.getElementById('progress-time');
+        const systemStatusBadge = document.getElementById('system-status-badge');
+        const operationStatus = document.getElementById('operation-status');
+        const windStatus = document.getElementById('wind-status');
+        const rainStatus = document.getElementById('rain-status');
+        const logicStatus = document.getElementById('logic-status');
+        const motorStatus = document.getElementById('motor-status');
+        const net = document.getElementById('net');
+        const systemTimeDisplay = document.getElementById('system-time');
+
+        // --- State Variables ---
+        let simulationInterval;
+        let progress = 0; // in milliseconds
+        const totalDuration = 10000; // 10 seconds
+        let isPaused = false;
+
+        // --- Core Simulation Logic (from your C++ code) ---
+        function updateSimulation() {
+            if (isPaused) return;
+
+            progress += 100; // Update every 100ms
+            
+            const elapsedSeconds = (progress / 1000).toFixed(1);
+            const progressPercent = (progress / totalDuration) * 100;
+
+            // Update UI
+            progressBar.style.width = ${progressPercent}%;
+            progressTime.textContent = ${elapsedSeconds}s / ${(totalDuration / 1000).toFixed(1)}s;
+
+            const eventType = faultPhaseSelect.value;
+            
+            // --- Animation Timeline ---
+            if (elapsedSeconds < 2.0) {
+                // Phase 1: Monitoring
+                logicStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-blue-500 mr-2 blinking-dot"></span>Monitoring...;
+            } else if (elapsedSeconds >= 2.0 && elapsedSeconds < 4.0) {
+                // Phase 2: Storm Detected
+                operationStatus.textContent = 'Storm Detected!';
+                operationStatus.className = 'px-3 py-1 font-semibold rounded-full bg-red-100 text-red-800';
+                logicStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-red-500 mr-2 blinking-dot"></span>ALERT!;
+                
+                if (eventType === 'wind') {
+                    windStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-red-500 mr-2 blinking-dot"></span>High Wind!;
+                } else {
+                    rainStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-red-500 mr-2 blinking-dot"></span>Heavy Rain!;
+                }
+            } else if (elapsedSeconds >= 4.0 && elapsedSeconds < 8.0) {
+                // Phase 3: Deploying Net
+                operationStatus.textContent = 'Deploying Net...';
+                motorStatus.textContent = 'DEPLOYING';
+                
+                // Animate the net
+                net.style.width = '240px'; // 15rem
+                net.style.height = '128px'; // 8rem
+                net.style.borderRadius = '50% 50% 8px 8px';
+            } else if (elapsedSeconds >= 8.0 && elapsedSeconds < 10.0) {
+                // Phase 4: Net Deployed & Alert Sent
+                operationStatus.textContent = 'Net Deployed';
+                motorStatus.textContent = 'DEPLOYED';
+                 logicStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>IoT Alert Sent;
+            }
+
+            if (progress >= totalDuration) {
+                clearInterval(simulationInterval);
+                systemStatusBadge.textContent = 'Finished';
+                systemStatusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-blue-200 text-blue-800';
+            }
+        }
+
+        // --- Control Functions ---
+        function startSimulation() {
+            if (progress >= totalDuration) return; // Don't start if finished
+            
+            isPaused = false;
+            simulationInterval = setInterval(updateSimulation, 100);
+
+            // Update UI state
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            resetBtn.disabled = false;
+            faultPhaseSelect.disabled = true;
+            startBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            pauseBtn.classList.remove('bg-gray-200');
+            pauseBtn.classList.add('bg-yellow-500', 'text-white');
+            systemStatusBadge.textContent = 'Running';
+            systemStatusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-green-200 text-green-800';
+        }
+
+        function pauseSimulation() {
+            if (isPaused) { // Resume
+                isPaused = false;
+                pauseBtn.textContent = 'Pause';
+                startSimulation();
+            } else { // Pause
+                isPaused = true;
+                clearInterval(simulationInterval);
+                pauseBtn.textContent = 'Resume';
+                systemStatusBadge.textContent = 'Paused';
+                systemStatusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-yellow-200 text-yellow-800';
+            }
+        }
+
+        function resetSimulation() {
+            clearInterval(simulationInterval);
+            isPaused = false;
+            progress = 0;
+
+            // Reset UI elements to initial state
+            progressBar.style.width = '0%';
+            progressTime.textContent = '0.0s / 10.0s';
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resetBtn.disabled = true;
+            faultPhaseSelect.disabled = false;
+            pauseBtn.textContent = 'Pause';
+            
+            startBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            pauseBtn.classList.remove('bg-yellow-500', 'text-white');
+            pauseBtn.classList.add('bg-gray-200');
+
+            systemStatusBadge.textContent = 'Idle';
+            systemStatusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-gray-200 text-gray-600';
+            operationStatus.textContent = 'Normal Operation';
+            operationStatus.className = 'px-3 py-1 font-semibold rounded-full bg-green-100 text-green-800';
+            
+            windStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>Normal;
+            rainStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>Normal;
+            logicStatus.innerHTML = <span class="w-2 h-2 rounded-full bg-blue-500 mr-2 blinking-dot"></span>Monitoring...;
+            motorStatus.textContent = 'IDLE';
+            
+            net.style.width = '20px';
+            net.style.height = '10px';
+            net.style.borderRadius = '50% 50% 0 0';
+        }
+        
+        function updateTime() {
+            const now = new Date();
+            systemTimeDisplay.textContent = now.toLocaleTimeString('en-IN', { hour12: false });
+        }
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startSimulation);
+        pauseBtn.addEventListener('click', pauseSimulation);
+        resetBtn.addEventListener('click', resetSimulation);
+
+        // Initialize time
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+
+</body>
+</html>
